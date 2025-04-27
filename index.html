@@ -132,30 +132,34 @@ function checkPassword() {
   }
 }
 
-// Funzione per caricare gli eventi nel calendario
-function caricaEventi(fetchInfo, successCallback, failureCallback) {
-  fetch(apiUrl) // Fai la richiesta a Netlify (che a sua volta fa la richiesta a Google Apps Script)
-    .then(response => response.json())  // Ottieni la risposta come JSON
-    .then(data => {
-      // Log per vedere cosa contiene la risposta
-      console.log("Eventi ricevuti dal server:", data);
+// Funzione per salvare i dati del turno
+function salvaDati() {
+  const data = document.getElementById('data').value;
+  const oraIn = document.getElementById('oraIn').value;
+  const oraOut = document.getElementById('oraOut').value;
+  const mansione = document.getElementById('mansione').value;
 
-      const eventi = data
-        .filter(turno => turno.utente === currentUser) // Filtro per l'utente corrente
-        .map((turno, index) => ({
-          title: `${turno.mansione} (${turno.oraIn}-${turno.oraOut})`,  // Descrizione evento
-          start: turno.data,  // La data
-          allDay: true         // Evento per l'intera giornata
-        }));
+  if (!data || !oraIn || !oraOut || !mansione) {
+    alert('Compila tutti i campi!');
+    return;
+  }
 
-      console.log("Eventi formattati per il calendario:", eventi); // Log degli eventi formattati
+  const turno = { data, oraIn, oraOut, mansione, utente: currentUser };
 
-      successCallback(eventi); // Passa gli eventi a FullCalendar
-    })
-    .catch(error => {
-      console.error("Errore nel caricamento degli eventi:", error);
-      failureCallback(error); // Se c'è un errore, segnalo il fallimento
-    });
+  fetch(apiUrl, {
+    method: "POST",  // Assicurati che la richiesta sia POST
+    body: JSON.stringify(turno),  // Invia i dati come JSON
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(response => response.json())  // Gestisci la risposta come JSON
+  .then(res => {
+    alert('Turno salvato!');
+    aggiornaCalendario();  // Funzione che aggiorna il calendario
+  })
+  .catch(error => {
+    console.error("Errore salvataggio", error);
+    alert('Errore durante il salvataggio!');
+  });
 }
 
 // Funzione per aggiornare il calendario
