@@ -109,3 +109,144 @@ const apiUrl = "/.netlify/functions/proxy";  // Nuovo URL della funzione Netlify
 // Gestione login e password
 const passwords = {
   "andrea": "andrea123",
+  "chiara": "chiara123",
+  "stefano": "stefano123"
+};
+
+// Funzione per selezionare l'utente
+function login(user) {
+  currentUser = user;
+  // Mostra la sezione di login
+  document.getElementById('loginSection').style.display = 'block';
+}
+
+// Verifica la password
+function checkPassword() {
+  const enteredPassword = document.getElementById('passwordInput').value;
+  if (enteredPassword === passwords[currentUser]) {
+    document.getElementById('loginSection').style.display = 'none'; // Nasconde la sezione di login
+    document.getElementById('formSection').style.display = 'block'; // Mostra il modulo
+    inizializzaCalendario(); // Inizializza il calendario
+  } else {
+    document.getElementById('errorMsg').innerText = "Password errata!";
+  }
+}
+
+// Funzione per caricare gli eventi nel calendario
+function caricaEventi(fetchInfo, successCallback, failureCallback) {
+  fetch(apiUrl) // Richiesta al server
+    .then(response => response.json())  // Converte la risposta in JSON
+    .then(data => {
+      // Filtro degli eventi per l'utente
+      const eventi = data
+        .filter(turno => turno.utente === currentUser) // Filtro per l'utente corrente
+        .map((turno, index) => ({
+          title: `${turno.mansione} (${turno.oraIn}-${turno.oraOut})`,  // Descrizione evento
+          start: turno.data,  // La data
+          allDay: true         // Evento per l'intera giornata
+        }));
+
+      successCallback(eventi); // Passa gli eventi a FullCalendar
+    })
+    .catch(error => {
+      console.error("Errore nel caricamento degli eventi:", error);
+      failureCallback(error); // Se c'è un errore, segnalo il fallimento
+    });
+}
+
+// Funzione per aggiornare il calendario
+function aggiornaCalendario() {
+  if (calendar) {
+    calendar.refetchEvents();
+  }
+}
+
+// Funzione per inizializzare il calendario
+function inizializzaCalendario() {
+  const calendarEl = document.getElementById('calendar');
+  if (!calendar) {
+    calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'it',
+      height: 'auto',
+      events: caricaEventi,
+      eventClick: function(info) {
+        alert('Non puoi modificare direttamente dal calendario.');
+      }
+    });
+
+    calendar.render();
+  } else {
+    aggiornaCalendario();
+  }
+}
+
+// Funzione per salvare i dati del turno
+function salvaDati() {
+  const data = document.getElementById('data').value;
+  const oraIn = document.getElementById('oraIn').value;
+  const oraOut = document.getElementById('oraOut').value;
+  const mansione = document.getElementById('mansione').value;
+
+  if (!data || !oraIn || !oraOut || !mansione) {
+    alert('Compila tutti i campi!');
+    return;
+  }
+
+  const turno = { data, oraIn, oraOut, mansione, utente: currentUser };
+
+  fetch(apiUrl, {
+    method: "POST",  // Assicurati che sia POST
+    body: JSON.stringify(turno),  // Invia i dati come JSON
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(response => response.text())
+  .then(res => {
+    alert('Turno salvato!');
+    aggiornaCalendario();  // Funzione che aggiorna il calendario
+  })
+  .catch(error => {
+    console.error("Errore salvataggio", error);
+    alert('Errore durante il salvataggio!');
+  });
+}
+
+// Funzione per generare il PDF
+function generaPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(turni => {
+      const datiUtente = turni.filter(t => t.utente === currentUser);
+
+      if (datiUtente.length === 0) {
+        alert('Non ci sono turni salvati!');
+        return;
+      }
+
+      const dataTurni = datiUtente.map(turno => {
+        const inTime = new Date(`1970-01-01T${turno.oraIn}:00`);
+        const outTime = new Date(`1970-01-01T${turno.oraOut}:00`);
+        let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
+        if (oreLavorate < 0) oreLavorate += 24; // Correzione per turni che superano la mezzanotte
+        return [turno.data, turno.mansione, turno.oraIn, turno.oraOut, oreLavorate];
+      });
+
+      doc.autoTable({
+        head: [['Data', 'Mansione', 'Ora In', 'Ora Out', 'Ore']],
+        body: dataTurni
+      });
+
+      doc.save(`${currentUser}_turni.pdf`);
+    })
+    .catch(error => {
+      console.error("Errore durante la generazione del PDF", error);
+      alert('Errore durante la generazione del PDF!');
+    });
+}
+</script>
+
+</body>
+</html>
