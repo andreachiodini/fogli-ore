@@ -1,6 +1,6 @@
 let currentUser = "";
 let calendar;
-const apiUrl = "https://script.google.com/macros/s/AKfycbwefOykHpYhQJMe6gamCxjLchOBsVOkEmwstuzHiz2jMf_Jjh-umvKbA_q10XEBxi2OaQ/exec";
+const apiUrl = "https://script.google.com/macros/s/AKfycby-5XEUpvZrpeFE-AcW1oQwiBSs0PYzE909JYQOaYnbzi-dcDkSW_iSIpkb03bDOMQwKw/exec";
 
 const passwords = {
   "andrea": "andrea123",
@@ -65,7 +65,7 @@ function inizializzaCalendario() {
       height: 'auto',
       events: caricaEventi,
       eventClick: function(info) {
-        alert('Non puoi modificare/eliminare direttamente dal calendario.\nModifica o elimina dal foglio Google.');
+        alert('Non puoi modificare/eliminare direttamente dal calendario.\n(Se vuoi possiamo aggiungerlo dopo!)');
       }
     });
 
