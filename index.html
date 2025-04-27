@@ -7,9 +7,15 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Librerie per generare PDF -->
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+
+  <!-- Librerie PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 </head>
 <body>
   <h1>Seleziona il tuo nome</h1>
@@ -65,12 +71,13 @@
         <option>Aquagol/Salvamento FERIALE</option>
         <option>Aquagol/Salvamento FESTIVO</option>
       </select>
-    </label><br>
+    </label><br><br>
+
     <button onclick="salvaDati()">Salva turno</button><br><br>
     <button onclick="generaPDF()">Genera PDF</button>
 
-    <h2>Turni Salvati</h2>
-    <ul id="turniSalvati"></ul>
+    <h2>Calendario Turni</h2>
+    <div id="calendar"></div>
   </div>
 
   <script src="script.js"></script>
