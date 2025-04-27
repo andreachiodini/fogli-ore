@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fogli Ore Collaboratori</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Seleziona il tuo nome</h1>
+
+  <button onclick="login('andrea')">Andrea Chiodini</button>
+  <button onclick="login('chiara')">Chiara Squaratti</button>
+  <button onclick="login('stefano')">Stefano Manfredi</button>
+
+  <div id="loginSection" style="display:none;">
+    <h2>Inserisci la password</h2>
+    <input type="password" id="passwordInput">
+    <button onclick="checkPassword()">Accedi</button>
+    <p id="errorMsg" style="color:red;"></p>
+  </div>
+
+  <div id="formSection" style="display:none;">
+    <h2>Modulo di Inserimento</h2>
+    <label>Data: <input type="date" id="data"></label><br>
+    <label>Ora IN: <input type="time" id="oraIn"></label><br>
+    <label>Ora OUT: <input type="time" id="oraOut"></label><br>
+    <label>Mansione: 
+      <select id="mansione">
+        <option>Assistente bagnanti FERIALE</option>
+        <option>Assistente bagnanti FESTIVO</option>
+        <option>Cassa FERIALE</option>
+        <option>Cassa FESTIVO</option>
+        <option>Rotazione FERIALE</option>
+        <option>Rotazione FESTIVO</option>
+        <option>Istruttore FERIALE</option>
+        <option>Istruttore FESTIVO</option>
+        <option>Aiuto allenatore FERIALE</option>
+        <option>Aiuto allenatore FESTIVO</option>
+        <option>Sincro/Pallan FERIALE</option>
+        <option>Sincro/Pallan FESTIVO</option>
+        <option>Acquagym FERIALE</option>
+        <option>Acquagym FESTIVO</option>
+        <option>Baby istruttore FERIALE</option>
+        <option>Baby istruttore FESTIVO</option>
+        <option>Baby aiuto allenatore FERIALE</option>
+        <option>Baby aiuto allenatore FESTIVO</option>
+        <option>Neonatale FERIALE</option>
+        <option>Neonatale FESTIVO</option>
+        <option>Preparto FERIALE</option>
+        <option>Preparto FESTIVO</option>
+        <option>Lezione individuale FERIALE</option>
+        <option>Lezione individuale FESTIVO</option>
+        <option>Propaganda FERIALE</option>
+        <option>Propaganda FESTIVO</option>
+        <option>Segreteria FERIALE</option>
+        <option>Segreteria FESTIVO</option>
+        <option>Coordinatore FERIALE</option>
+        <option>Coordinatore FESTIVO</option>
+        <option>Aquagol/Salvamento FERIALE</option>
+        <option>Aquagol/Salvamento FESTIVO</option>
+      </select>
+    </label><br>
+    <button onclick="salvaDati()">Salva turno</button>
+
+    <h2>Turni Salvati</h2>
+    <ul id="turniSalvati"></ul>
+  </div>
+
+<script src="script.js"></script>
+</body>
+</html>
