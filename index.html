@@ -134,10 +134,12 @@ function checkPassword() {
 
 // Funzione per caricare gli eventi nel calendario
 function caricaEventi(fetchInfo, successCallback, failureCallback) {
-  fetch(apiUrl) // Richiesta al server
-    .then(response => response.json())  // Converte la risposta in JSON
+  fetch(apiUrl) // Fai la richiesta a Netlify (che a sua volta fa la richiesta a Google Apps Script)
+    .then(response => response.json())  // Ottieni la risposta come JSON
     .then(data => {
-      // Filtro degli eventi per l'utente
+      // Log per vedere cosa contiene la risposta
+      console.log("Eventi ricevuti dal server:", data);
+
       const eventi = data
         .filter(turno => turno.utente === currentUser) // Filtro per l'utente corrente
         .map((turno, index) => ({
@@ -145,6 +147,8 @@ function caricaEventi(fetchInfo, successCallback, failureCallback) {
           start: turno.data,  // La data
           allDay: true         // Evento per l'intera giornata
         }));
+
+      console.log("Eventi formattati per il calendario:", eventi); // Log degli eventi formattati
 
       successCallback(eventi); // Passa gli eventi a FullCalendar
     })
@@ -200,7 +204,7 @@ function salvaDati() {
     body: JSON.stringify(turno),  // Invia i dati come JSON
     headers: { "Content-Type": "application/json" }
   })
-  .then(response => response.text())
+  .then(response => response.text())  // Ottieni la risposta dal server
   .then(res => {
     alert('Turno salvato!');
     aggiornaCalendario();  // Funzione che aggiorna il calendario
@@ -213,40 +217,4 @@ function salvaDati() {
 
 // Funzione per generare il PDF
 function generaPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(turni => {
-      const datiUtente = turni.filter(t => t.utente === currentUser);
-
-      if (datiUtente.length === 0) {
-        alert('Non ci sono turni salvati!');
-        return;
-      }
-
-      const dataTurni = datiUtente.map(turno => {
-        const inTime = new Date(`1970-01-01T${turno.oraIn}:00`);
-        const outTime = new Date(`1970-01-01T${turno.oraOut}:00`);
-        let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
-        if (oreLavorate < 0) oreLavorate += 24; // Correzione per turni che superano la mezzanotte
-        return [turno.data, turno.mansione, turno.oraIn, turno.oraOut, oreLavorate];
-      });
-
-      doc.autoTable({
-        head: [['Data', 'Mansione', 'Ora In', 'Ora Out', 'Ore']],
-        body: dataTurni
-      });
-
-      doc.save(`${currentUser}_turni.pdf`);
-    })
-    .catch(error => {
-      console.error("Errore durante la generazione del PDF", error);
-      alert('Errore durante la generazione del PDF!');
-    });
-}
-</script>
-
-</body>
-</html>
+ 
