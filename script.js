@@ -1,5 +1,6 @@
 let currentUser = "";
-let calendar; // FullCalendar instance
+let calendar;
+const apiUrl = "https://script.google.com/macros/s/AKfycbwefOykHpYhQJMe6gamCxjLchOBsVOkEmwstuzHiz2jMf_Jjh-umvKbA_q10XEBxi2OaQ/exec";
 
 const passwords = {
   "andrea": "andrea123",
@@ -34,13 +35,24 @@ function salvaDati() {
     return;
   }
 
-  const turno = { data, oraIn, oraOut, mansione };
+  const turno = { data, oraIn, oraOut, mansione, utente: currentUser };
 
-  let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
-  turni.push(turno);
-  localStorage.setItem(currentUser, JSON.stringify(turni));
-  aggiornaCalendario();
-  alert('Turno salvato!');
+  fetch(apiUrl, {
+    method: "POST",
+    body: JSON.stringify(turno),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  .then(response => response.text())
+  .then(res => {
+    alert('Turno salvato!');
+    aggiornaCalendario();
+  })
+  .catch(error => {
+    console.error("Errore salvataggio", error);
+    alert('Errore durante il salvataggio!');
+  });
 }
 
 function inizializzaCalendario() {
@@ -51,15 +63,9 @@ function inizializzaCalendario() {
       initialView: 'dayGridMonth',
       locale: 'it',
       height: 'auto',
-      events: caricaEventi(),
+      events: caricaEventi,
       eventClick: function(info) {
-        const index = info.event.extendedProps.index;
-        const conferma = confirm("Premi OK per modificare, Annulla per eliminare.");
-        if (conferma) {
-          modificaTurno(index);
-        } else {
-          eliminaTurno(index);
-        }
+        alert('Non puoi modificare/eliminare direttamente dal calendario.\nModifica o elimina dal foglio Google.');
       }
     });
 
@@ -71,102 +77,95 @@ function inizializzaCalendario() {
 
 function aggiornaCalendario() {
   if (calendar) {
-    calendar.removeAllEvents();
-    const eventi = caricaEventi();
-    eventi.forEach(event => calendar.addEvent(event));
+    calendar.refetchEvents();
   }
 }
 
-function caricaEventi() {
-  const turni = JSON.parse(localStorage.getItem(currentUser)) || [];
-  return turni.map((turno, index) => ({
-    title: `${turno.mansione} (${turno.oraIn}-${turno.oraOut})`,
-    start: turno.data,
-    allDay: true,
-    extendedProps: { index: index }
-  }));
-}
-
-function eliminaTurno(index) {
-  let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
-  turni.splice(index, 1);
-  localStorage.setItem(currentUser, JSON.stringify(turni));
-  aggiornaCalendario();
-  alert('Turno eliminato!');
-}
-
-function modificaTurno(index) {
-  let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
-  const turno = turni[index];
-
-  document.getElementById('data').value = turno.data;
-  document.getElementById('oraIn').value = turno.oraIn;
-  document.getElementById('oraOut').value = turno.oraOut;
-  document.getElementById('mansione').value = turno.mansione;
-
-  turni.splice(index, 1);
-  localStorage.setItem(currentUser, JSON.stringify(turni));
-  aggiornaCalendario();
+function caricaEventi(fetchInfo, successCallback, failureCallback) {
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+      const eventi = data
+        .filter(turno => turno.utente === currentUser)
+        .map((turno, index) => ({
+          title: `${turno.mansione} (${turno.oraIn}-${turno.oraOut})`,
+          start: turno.data,
+          allDay: true
+        }));
+      successCallback(eventi);
+    })
+    .catch(error => {
+      console.error("Errore caricamento", error);
+      failureCallback(error);
+    });
 }
 
 function generaPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const turni = JSON.parse(localStorage.getItem(currentUser)) || [];
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(turni => {
+      const datiUtente = turni.filter(t => t.utente === currentUser);
 
-  if (turni.length === 0) {
-    alert('Non ci sono turni salvati!');
-    return;
-  }
+      if (datiUtente.length === 0) {
+        alert('Non ci sono turni salvati!');
+        return;
+      }
 
-  const dataTurni = turni.map(turno => {
-    const inTime = new Date(`1970-01-01T${turno.oraIn}:00`);
-    const outTime = new Date(`1970-01-01T${turno.oraOut}:00`);
-    let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
-    if (oreLavorate < 0) oreLavorate += 24;
-    return [
-      turno.data,
-      turno.oraIn,
-      turno.oraOut,
-      turno.mansione,
-      oreLavorate.toFixed(2)
-    ];
-  });
+      const dataTurni = datiUtente.map(turno => {
+        const inTime = new Date(`1970-01-01T${turno.oraIn}:00`);
+        const outTime = new Date(`1970-01-01T${turno.oraOut}:00`);
+        let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
+        if (oreLavorate < 0) oreLavorate += 24;
+        return [
+          turno.data,
+          turno.oraIn,
+          turno.oraOut,
+          turno.mansione,
+          oreLavorate.toFixed(2)
+        ];
+      });
 
-  doc.text(`Turni di lavoro - ${currentUser}`, 14, 15);
+      doc.text(`Turni di lavoro - ${currentUser}`, 14, 15);
 
-  doc.autoTable({
-    head: [['Data', 'Ora IN', 'Ora OUT', 'Mansione', 'Ore Lavorate']],
-    body: dataTurni,
-    startY: 20
-  });
+      doc.autoTable({
+        head: [['Data', 'Ora IN', 'Ora OUT', 'Mansione', 'Ore Lavorate']],
+        body: dataTurni,
+        startY: 20
+      });
 
-  const riepilogo = {};
+      const riepilogo = {};
 
-  dataTurni.forEach(item => {
-    const mansione = item[3];
-    const ore = parseFloat(item[4]);
-    if (!riepilogo[mansione]) {
-      riepilogo[mansione] = ore;
-    } else {
-      riepilogo[mansione] += ore;
-    }
-  });
+      dataTurni.forEach(item => {
+        const mansione = item[3];
+        const ore = parseFloat(item[4]);
+        if (!riepilogo[mansione]) {
+          riepilogo[mansione] = ore;
+        } else {
+          riepilogo[mansione] += ore;
+        }
+      });
 
-  const dataRiepilogo = Object.keys(riepilogo).map(mansione => [
-    mansione,
-    riepilogo[mansione].toFixed(2)
-  ]);
+      const dataRiepilogo = Object.keys(riepilogo).map(mansione => [
+        mansione,
+        riepilogo[mansione].toFixed(2)
+      ]);
 
-  doc.addPage();
-  doc.text('Riepilogo Ore per Mansione', 14, 15);
+      doc.addPage();
+      doc.text('Riepilogo Ore per Mansione', 14, 15);
 
-  doc.autoTable({
-    head: [['Mansione', 'Ore Totali']],
-    body: dataRiepilogo,
-    startY: 20
-  });
+      doc.autoTable({
+        head: [['Mansione', 'Ore Totali']],
+        body: dataRiepilogo,
+        startY: 20
+      });
 
-  doc.save(`${currentUser}_turni.pdf`);
+      doc.save(`${currentUser}_turni.pdf`);
+    })
+    .catch(error => {
+      console.error("Errore generazione PDF", error);
+      alert('Errore durante la generazione del PDF!');
+    });
 }
