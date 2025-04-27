@@ -1,6 +1,6 @@
 let currentUser = "";
 let calendar;
-const apiUrl = "https://script.google.com/macros/s/AKfycbybmfSXhrzk9jzGpipkn_9auihxh4eoIovwzW1TRp4SUBbwvsDH9DVx-HjcmmkunoiQXQ/exec";
+const apiUrl = "https://script.google.com/macros/s/AKfycbyvGtwgOM6zV5N19QmmMh9t0hKbecqZLxXBlGGe3iv-UIrQT9DLvFejVO-Ti4npMI-97g/exec";
 
 const passwords = {
   "andrea": "andrea123",
