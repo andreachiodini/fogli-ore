@@ -71,12 +71,13 @@
     </select>
   </label><br>
   <button onclick="salvaDati()">Salva turno</button>
+  <button onclick="generaPDF()">Genera PDF</button>
 </div>
 
 <script>
 // Variabili e configurazione
 let currentUser = "";
-const apiUrl = "/.netlify/functions/proxy";  // Nuovo URL della funzione Netlify
+const apiUrl = "https://script.google.com/macros/s/AKfycbwi69qWgniUNUg2q4RKLiTW0QqJWQvWMewnV2Mkbaa40jniO-CtRL2ZefWTdqZsGxea_g/exec";  // URL della funzione Google Apps Script
 
 // Gestione login e password
 const passwords = {
@@ -130,6 +131,24 @@ function salvaDati() {
     console.error("Errore salvataggio", error);
     alert('Errore durante il salvataggio!');
   });
+}
+
+// Funzione per generare il PDF
+function generaPDF() {
+  const doc = new jsPDF();
+
+  // Crea la tabella con i dati del turno
+  const data = [
+    ["Data", "Ora IN", "Ora OUT", "Mansione", "Collaboratore"],
+    [document.getElementById('data').value, document.getElementById('oraIn').value, document.getElementById('oraOut').value, document.getElementById('mansione').value, currentUser]
+  ];
+
+  doc.autoTable({
+    head: data.slice(0, 1),
+    body: data.slice(1),
+  });
+
+  doc.save(`Turno_${currentUser}.pdf`);
 }
 </script>
 
