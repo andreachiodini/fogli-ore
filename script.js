@@ -53,20 +53,24 @@ function loadTurni() {
 
   turni.forEach((turno, index) => {
     const li = document.createElement('li');
-    li.textContent = `${turno.data} - ${turno.oraIn}-${turno.oraOut} (${turno.mansione}) `;
 
-    // Bottone Modifica
+    const testo = document.createElement('span');
+    testo.textContent = `${turno.data} - ${turno.oraIn}-${turno.oraOut} (${turno.mansione}) `;
+
     const btnModifica = document.createElement('button');
     btnModifica.textContent = "Modifica";
+    btnModifica.style.marginLeft = "10px";
     btnModifica.onclick = () => modificaTurno(index);
 
-    // Bottone Elimina
     const btnElimina = document.createElement('button');
     btnElimina.textContent = "Elimina";
+    btnElimina.style.marginLeft = "5px";
     btnElimina.onclick = () => eliminaTurno(index);
 
+    li.appendChild(testo);
     li.appendChild(btnModifica);
     li.appendChild(btnElimina);
+
     lista.appendChild(li);
   });
 }
@@ -87,13 +91,11 @@ function modificaTurno(index) {
   document.getElementById('oraOut').value = turno.oraOut;
   document.getElementById('mansione').value = turno.mansione;
 
-  // Dopo aver caricato i dati per modifica, eliminiamo subito il vecchio turno
   turni.splice(index, 1);
   localStorage.setItem(currentUser, JSON.stringify(turni));
   loadTurni();
 }
 
-// FUNZIONE PER GENERARE IL PDF
 function generaPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -114,7 +116,7 @@ function generaPDF() {
     const inTime = new Date(`1970-01-01T${oraIn}:00`);
     const outTime = new Date(`1970-01-01T${oraOut}:00`);
     let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
-    if (oreLavorate < 0) oreLavorate += 24; // caso turno dopo mezzanotte
+    if (oreLavorate < 0) oreLavorate += 24;
 
     return [
       turno.data,
