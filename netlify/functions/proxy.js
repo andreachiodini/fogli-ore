@@ -11,11 +11,13 @@ exports.handler = async (event, context) => {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: event.body
+      body: event.body  // Questo è il corpo della richiesta che invii dal sito
     });
+
     const data = await response.text();
     return { statusCode: 200, body: data };
   } catch (error) {
+    console.error("Errore nella funzione proxy:", error);
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };
