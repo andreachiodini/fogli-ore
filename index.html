@@ -4,7 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fogli Ore Collaboratori</title>
+
+  <!-- Collegamento al file di stile CSS -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Libreria jsPDF per creare PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Libreria jsPDF-AutoTable per creare tabelle nei PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <h1>Seleziona il tuo nome</h1>
@@ -61,12 +69,15 @@
         <option>Aquagol/Salvamento FESTIVO</option>
       </select>
     </label><br>
-    <button onclick="salvaDati()">Salva turno</button>
+    <button onclick="salvaDati()">Salva turno</button><br><br>
+
+    <!-- Bottone per generare PDF -->
+    <button onclick="generaPDF()">Genera PDF</button>
 
     <h2>Turni Salvati</h2>
     <ul id="turniSalvati"></ul>
   </div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
