@@ -57,6 +57,8 @@ function loadTurni() {
     lista.appendChild(li);
   });
 }
+
+// FUNZIONE PER GENERARE IL PDF
 function generaPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -77,7 +79,7 @@ function generaPDF() {
     const inTime = new Date(`1970-01-01T${oraIn}:00`);
     const outTime = new Date(`1970-01-01T${oraOut}:00`);
     let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
-    if (oreLavorate < 0) oreLavorate += 24; // caso turno a cavallo della mezzanotte
+    if (oreLavorate < 0) oreLavorate += 24; // caso turno dopo mezzanotte
 
     return [
       turno.data,
