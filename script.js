@@ -51,11 +51,46 @@ function loadTurni() {
   lista.innerHTML = "";
   const turni = JSON.parse(localStorage.getItem(currentUser)) || [];
 
-  turni.forEach(turno => {
+  turni.forEach((turno, index) => {
     const li = document.createElement('li');
-    li.textContent = `${turno.data} - ${turno.oraIn}-${turno.oraOut} (${turno.mansione})`;
+    li.textContent = `${turno.data} - ${turno.oraIn}-${turno.oraOut} (${turno.mansione}) `;
+
+    // Bottone Modifica
+    const btnModifica = document.createElement('button');
+    btnModifica.textContent = "Modifica";
+    btnModifica.onclick = () => modificaTurno(index);
+
+    // Bottone Elimina
+    const btnElimina = document.createElement('button');
+    btnElimina.textContent = "Elimina";
+    btnElimina.onclick = () => eliminaTurno(index);
+
+    li.appendChild(btnModifica);
+    li.appendChild(btnElimina);
     lista.appendChild(li);
   });
+}
+
+function eliminaTurno(index) {
+  let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
+  turni.splice(index, 1);
+  localStorage.setItem(currentUser, JSON.stringify(turni));
+  loadTurni();
+}
+
+function modificaTurno(index) {
+  let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
+  const turno = turni[index];
+
+  document.getElementById('data').value = turno.data;
+  document.getElementById('oraIn').value = turno.oraIn;
+  document.getElementById('oraOut').value = turno.oraOut;
+  document.getElementById('mansione').value = turno.mansione;
+
+  // Dopo aver caricato i dati per modifica, eliminiamo subito il vecchio turno
+  turni.splice(index, 1);
+  localStorage.setItem(currentUser, JSON.stringify(turni));
+  loadTurni();
 }
 
 // FUNZIONE PER GENERARE IL PDF
