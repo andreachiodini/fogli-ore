@@ -1,4 +1,6 @@
 let currentUser = "";
+let calendar; // FullCalendar instance
+
 const passwords = {
   "andrea": "andrea123",
   "chiara": "chiara123",
@@ -15,7 +17,7 @@ function checkPassword() {
   if (enteredPassword === passwords[currentUser]) {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('formSection').style.display = 'block';
-    loadTurni();
+    inizializzaCalendario();
   } else {
     document.getElementById('errorMsg').innerText = "Password errata!";
   }
@@ -37,44 +39,55 @@ function salvaDati() {
   let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
   turni.push(turno);
   localStorage.setItem(currentUser, JSON.stringify(turni));
-  loadTurni();
+  aggiornaCalendario();
   alert('Turno salvato!');
 }
 
-function loadTurni() {
-  const lista = document.getElementById('turniSalvati');
-  lista.innerHTML = "";
-  const turni = JSON.parse(localStorage.getItem(currentUser)) || [];
+function inizializzaCalendario() {
+  const calendarEl = document.getElementById('calendar');
 
-  turni.forEach((turno, index) => {
-    const li = document.createElement('li');
-
-    const testo = document.createElement('span');
-    testo.textContent = `${turno.data} - ${turno.oraIn}-${turno.oraOut} (${turno.mansione})`;
-
-    const btnModifica = document.createElement('button');
-    btnModifica.textContent = "Modifica";
-    btnModifica.style.marginLeft = "10px";
-    btnModifica.onclick = () => modificaTurno(index);
-
-    const btnElimina = document.createElement('button');
-    btnElimina.textContent = "Elimina";
-    btnElimina.style.marginLeft = "5px";
-    btnElimina.onclick = () => eliminaTurno(index);
-
-    li.appendChild(testo);
-    li.appendChild(btnModifica);
-    li.appendChild(btnElimina);
-
-    lista.appendChild(li);
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'it',
+    height: 'auto',
+    events: caricaEventi(),
+    eventClick: function(info) {
+      const index = info.event.extendedProps.index;
+      if (confirm("Vuoi modificare questo turno? Premi 'Annulla' per eliminarlo.")) {
+        modificaTurno(index);
+      } else {
+        eliminaTurno(index);
+      }
+    }
   });
+
+  calendar.render();
+}
+
+function aggiornaCalendario() {
+  if (calendar) {
+    calendar.removeAllEvents();
+    const eventi = caricaEventi();
+    eventi.forEach(event => calendar.addEvent(event));
+  }
+}
+
+function caricaEventi() {
+  const turni = JSON.parse(localStorage.getItem(currentUser)) || [];
+  return turni.map((turno, index) => ({
+    title: `${turno.mansione} (${turno.oraIn}-${turno.oraOut})`,
+    start: turno.data,
+    allDay: true,
+    extendedProps: { index: index }
+  }));
 }
 
 function eliminaTurno(index) {
   let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
   turni.splice(index, 1);
   localStorage.setItem(currentUser, JSON.stringify(turni));
-  loadTurni();
+  aggiornaCalendario();
+  alert('Turno eliminato!');
 }
 
 function modificaTurno(index) {
@@ -88,7 +101,7 @@ function modificaTurno(index) {
 
   turni.splice(index, 1);
   localStorage.setItem(currentUser, JSON.stringify(turni));
-  loadTurni();
+  aggiornaCalendario();
 }
 
 function generaPDF() {
