@@ -10,8 +10,8 @@ h1, h2 {
 }
 
 button {
-  margin: 10px;
-  padding: 10px 20px;
+  margin: 5px;
+  padding: 8px 16px;
   font-size: 16px;
   cursor: pointer;
 }
@@ -32,5 +32,5 @@ ul {
 }
 
 li {
-  margin: 5px 0;
+  margin: 10px 0;
 }
