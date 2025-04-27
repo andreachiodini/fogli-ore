@@ -32,12 +32,7 @@ function salvaDati() {
     return;
   }
 
-  const turno = {
-    data,
-    oraIn,
-    oraOut,
-    mansione
-  };
+  const turno = { data, oraIn, oraOut, mansione };
 
   let turni = JSON.parse(localStorage.getItem(currentUser)) || [];
   turni.push(turno);
@@ -55,7 +50,7 @@ function loadTurni() {
     const li = document.createElement('li');
 
     const testo = document.createElement('span');
-    testo.textContent = `${turno.data} - ${turno.oraIn}-${turno.oraOut} (${turno.mansione}) `;
+    testo.textContent = `${turno.data} - ${turno.oraIn}-${turno.oraOut} (${turno.mansione})`;
 
     const btnModifica = document.createElement('button');
     btnModifica.textContent = "Modifica";
@@ -107,22 +102,16 @@ function generaPDF() {
     return;
   }
 
-  // Prima Tabella: tutti i turni uno per uno
   const dataTurni = turni.map(turno => {
-    const oraIn = turno.oraIn;
-    const oraOut = turno.oraOut;
-    const mansione = turno.mansione;
-
-    const inTime = new Date(`1970-01-01T${oraIn}:00`);
-    const outTime = new Date(`1970-01-01T${oraOut}:00`);
+    const inTime = new Date(`1970-01-01T${turno.oraIn}:00`);
+    const outTime = new Date(`1970-01-01T${turno.oraOut}:00`);
     let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
     if (oreLavorate < 0) oreLavorate += 24;
-
     return [
       turno.data,
-      oraIn,
-      oraOut,
-      mansione,
+      turno.oraIn,
+      turno.oraOut,
+      turno.mansione,
       oreLavorate.toFixed(2)
     ];
   });
@@ -135,7 +124,6 @@ function generaPDF() {
     startY: 20
   });
 
-  // Riepilogo: somma ore per mansione
   const riepilogo = {};
 
   dataTurni.forEach(item => {
