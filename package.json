@@ -1,0 +1,15 @@
+{
+  "name": "fogli-ore",
+  "version": "1.0.0",
+  "description": "Gestione Turni",
+  "main": "index.html",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "author": "",
+  "license": "ISC"
+}
