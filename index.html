@@ -217,4 +217,41 @@ function salvaDati() {
 
 // Funzione per generare il PDF
 function generaPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(turni => {
+      const datiUtente = turni.filter(t => t.utente === currentUser);
+
+      if (datiUtente.length === 0) {
+        alert('Non ci sono turni salvati!');
+        return;
+      }
+
+      const dataTurni = datiUtente.map(turno => {
+        const inTime = new Date(`1970-01-01T${turno.oraIn}:00`);
+        const outTime = new Date(`1970-01-01T${turno.oraOut}:00`);
+        let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
+        if (oreLavorate < 0) oreLavorate += 24; // Correzione per turni che superano la mezzanotte
+        return [turno.data, turno.mansione, turno.oraIn, turno.oraOut, oreLavorate];
+      });
+
+      doc.autoTable({
+        head: [['Data', 'Mansione', 'Ora In', 'Ora Out', 'Ore']],
+        body: dataTurni
+      });
+
+      doc.save(`${currentUser}_turni.pdf`);
+    })
+    .catch(error => {
+      console.error("Errore durante la generazione del PDF", error);
+      alert('Errore durante la generazione del PDF!');
+    });
+}
+</script>
+
+</body>
+</html>
  
