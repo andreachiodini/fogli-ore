@@ -46,22 +46,27 @@ function salvaDati() {
 function inizializzaCalendario() {
   const calendarEl = document.getElementById('calendar');
 
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    locale: 'it',
-    height: 'auto',
-    events: caricaEventi(),
-    eventClick: function(info) {
-      const index = info.event.extendedProps.index;
-      if (confirm("Vuoi modificare questo turno? Premi 'Annulla' per eliminarlo.")) {
-        modificaTurno(index);
-      } else {
-        eliminaTurno(index);
+  if (!calendar) {
+    calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'it',
+      height: 'auto',
+      events: caricaEventi(),
+      eventClick: function(info) {
+        const index = info.event.extendedProps.index;
+        const conferma = confirm("Premi OK per modificare, Annulla per eliminare.");
+        if (conferma) {
+          modificaTurno(index);
+        } else {
+          eliminaTurno(index);
+        }
       }
-    }
-  });
+    });
 
-  calendar.render();
+    calendar.render();
+  } else {
+    aggiornaCalendario();
+  }
 }
 
 function aggiornaCalendario() {
