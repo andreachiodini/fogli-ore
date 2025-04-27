@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Foglio Ore Collaboratori</title>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <style>
@@ -17,7 +15,7 @@
     h1 {
       text-align: center;
     }
-    #formSection, #loginSection, #calendar {
+    #formSection, #loginSection {
       margin-top: 20px;
     }
     input, select, button {
@@ -70,40 +68,14 @@
       <option>Istruttore FESTIVO</option>
       <option>Aiuto allenatore FERIALE</option>
       <option>Aiuto allenatore FESTIVO</option>
-      <option>Sincro/Pallan FERIALE</option>
-      <option>Sincro/Pallan FESTIVO</option>
-      <option>Acquagym FERIALE</option>
-      <option>Acquagym FESTIVO</option>
-      <option>Baby istruttore FERIALE</option>
-      <option>Baby istruttore FESTIVO</option>
-      <option>Baby aiuto allenatore FERIALE</option>
-      <option>Baby aiuto allenatore FESTIVO</option>
-      <option>Neonatale FERIALE</option>
-      <option>Neonatale FESTIVO</option>
-      <option>Preparto FERIALE</option>
-      <option>Preparto FESTIVO</option>
-      <option>Lezione individuale FERIALE</option>
-      <option>Lezione individuale FESTIVO</option>
-      <option>Propaganda FERIALE</option>
-      <option>Propaganda FESTIVO</option>
-      <option>Segreteria FERIALE</option>
-      <option>Segreteria FESTIVO</option>
-      <option>Coordinatore FERIALE</option>
-      <option>Coordinatore FESTIVO</option>
-      <option>Aquagol/Salvamento FERIALE</option>
-      <option>Aquagol/Salvamento FESTIVO</option>
     </select>
   </label><br>
   <button onclick="salvaDati()">Salva turno</button>
-  <button onclick="generaPDF()">Genera PDF</button>
-  
-  <div id="calendar" style="margin-top:30px;"></div>
 </div>
 
 <script>
 // Variabili e configurazione
 let currentUser = "";
-let calendar;
 const apiUrl = "/.netlify/functions/proxy";  // Nuovo URL della funzione Netlify
 
 // Gestione login e password
@@ -126,66 +98,8 @@ function checkPassword() {
   if (enteredPassword === passwords[currentUser]) {
     document.getElementById('loginSection').style.display = 'none'; // Nasconde la sezione di login
     document.getElementById('formSection').style.display = 'block'; // Mostra il modulo
-    inizializzaCalendario(); // Inizializza il calendario
   } else {
     document.getElementById('errorMsg').innerText = "Password errata!";
-  }
-}
-
-// Funzione per salvare i dati del turno
-function salvaDati() {
-  const data = document.getElementById('data').value;
-  const oraIn = document.getElementById('oraIn').value;
-  const oraOut = document.getElementById('oraOut').value;
-  const mansione = document.getElementById('mansione').value;
-
-  if (!data || !oraIn || !oraOut || !mansione) {
-    alert('Compila tutti i campi!');
-    return;
-  }
-
-  const turno = { data, oraIn, oraOut, mansione, utente: currentUser };
-
-  fetch(apiUrl, {
-    method: "POST",  // Assicurati che la richiesta sia POST
-    body: JSON.stringify(turno),  // Invia i dati come JSON
-    headers: { "Content-Type": "application/json" }
-  })
-  .then(response => response.json())  // Gestisci la risposta come JSON
-  .then(res => {
-    alert('Turno salvato!');
-    aggiornaCalendario();  // Funzione che aggiorna il calendario
-  })
-  .catch(error => {
-    console.error("Errore salvataggio", error);
-    alert('Errore durante il salvataggio!');
-  });
-}
-
-// Funzione per aggiornare il calendario
-function aggiornaCalendario() {
-  if (calendar) {
-    calendar.refetchEvents();
-  }
-}
-
-// Funzione per inizializzare il calendario
-function inizializzaCalendario() {
-  const calendarEl = document.getElementById('calendar');
-  if (!calendar) {
-    calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      locale: 'it',
-      height: 'auto',
-      events: caricaEventi,
-      eventClick: function(info) {
-        alert('Non puoi modificare direttamente dal calendario.');
-      }
-    });
-
-    calendar.render();
-  } else {
-    aggiornaCalendario();
   }
 }
 
@@ -211,51 +125,13 @@ function salvaDati() {
   .then(response => response.text())  // Ottieni la risposta dal server
   .then(res => {
     alert('Turno salvato!');
-    aggiornaCalendario();  // Funzione che aggiorna il calendario
   })
   .catch(error => {
     console.error("Errore salvataggio", error);
     alert('Errore durante il salvataggio!');
   });
 }
-
-// Funzione per generare il PDF
-function generaPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(turni => {
-      const datiUtente = turni.filter(t => t.utente === currentUser);
-
-      if (datiUtente.length === 0) {
-        alert('Non ci sono turni salvati!');
-        return;
-      }
-
-      const dataTurni = datiUtente.map(turno => {
-        const inTime = new Date(`1970-01-01T${turno.oraIn}:00`);
-        const outTime = new Date(`1970-01-01T${turno.oraOut}:00`);
-        let oreLavorate = (outTime - inTime) / (1000 * 60 * 60);
-        if (oreLavorate < 0) oreLavorate += 24; // Correzione per turni che superano la mezzanotte
-        return [turno.data, turno.mansione, turno.oraIn, turno.oraOut, oreLavorate];
-      });
-
-      doc.autoTable({
-        head: [['Data', 'Mansione', 'Ora In', 'Ora Out', 'Ore']],
-        body: dataTurni
-      });
-
-      doc.save(`${currentUser}_turni.pdf`);
-    })
-    .catch(error => {
-      console.error("Errore durante la generazione del PDF", error);
-      alert('Errore durante la generazione del PDF!');
-    });
-}
 </script>
 
 </body>
 </html>
- 
